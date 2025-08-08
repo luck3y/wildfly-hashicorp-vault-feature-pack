@@ -1,0 +1,14 @@
+xml<?xml version="1.0" ?>
+<tasks xmlns="urn:jboss:galleon:pm:wildfly:tasks:1.0">
+    
+    <!-- Copy the vault subsystem module -->
+    <copy-module module="org.wildfly.extension.vault"/>
+    
+    <!-- Add the vault extension -->
+    <add-extension module="org.wildfly.extension.vault"/>
+    
+    <!-- Add vault subsystem with default configuration -->
+    <add-subsystem subsystem="vault" 
+                   template="subsystem-templates/vault.xml"/>
+    
+</tasks>

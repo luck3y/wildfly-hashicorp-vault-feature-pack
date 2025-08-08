@@ -1,0 +1,6 @@
+Brief list of tasks outstanding
+
+ - Expression resolver needs to be added back (Ken)
+ - Unit tests using testcontainers & hashicorp container
+ - Names need to be checked for hashicorp-vault vs vault
+ - (few other things, will add more)

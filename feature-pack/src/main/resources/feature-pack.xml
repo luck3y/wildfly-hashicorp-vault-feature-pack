@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature-pack xmlns="urn:jboss:galleon:feature-pack:3.0"
+              location="org.wildfly.extension:vault-subsystem-feature-pack">
+    
+    <dependencies>
+        <dependency location="org.wildfly:wildfly-galleon-pack">
+            <name>wildfly</name>
+        </dependency>
+    </dependencies>
+    
+    <config model="standalone" name="standalone.xml">
+        <layers>
+            <include name="vault-layer"/>
+        </layers>
+    </config>
+    
+    <config model="domain" name="domain.xml">
+        <layers>
+            <include name="vault-layer"/>
+        </layers>
+    </config>
+    
+    <default-packages>
+        <package name="org.wildfly.extension.vault"/>
+    </default-packages>
+    
+    <plugins>
+        <plugin location="org.wildfly.galleon-plugins:wildfly-galleon-plugins"/>
+    </plugins>
+    
+</feature-pack>

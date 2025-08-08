@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<subsystem xmlns="urn:wildfly:vault:1.0">
+    <!-- Default Vault configuration -->
+    <connection name="default"
+                url="${vault.url:http://localhost:8200}"
+                token="${vault.token}"
+                auth-method="token"
+                ssl-verify="${vault.ssl.verify:true}"/>
+</subsystem>
