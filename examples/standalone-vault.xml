@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- 
+    Example WildFly standalone configuration with Vault subsystem
+    This shows how to configure the Vault subsystem in your standalone.xml
+-->
+<server xmlns="urn:jboss:domain:20.0">
+    <extensions>
+        <!-- Other extensions -->
+        <extension module="org.wildfly.extension.vault"/>
+    </extensions>
+
+    <management>
+        <!-- Management configuration -->
+    </management>
+
+    <profile>
+        <!-- Other subsystems -->
+        
+        <!-- Vault Subsystem Configuration -->
+        <subsystem xmlns="urn:wildfly:vault:1.0">
+            <!-- Production Vault connection -->
+            <connection name="prod-vault"
+                        url="https://vault.company.com:8200"
+                        token="${VAULT_TOKEN}"
+                        namespace="myapp"
+                        ssl-verify="true"/>
+                        
+            <!-- Development Vault connection -->
+            <connection name="dev-vault"
+                        url="http://localhost:8200"
+                        token="${DEV_VAULT_TOKEN}"
+                        ssl-verify="false"/>
+        </subsystem>
+        
+        <!-- Example: Datasource using Vault credentials -->
+        <subsystem xmlns="urn:jboss:domain:datasources:7.0">
+            <datasources>
+                <datasource jndi-name="java:jboss/datasources/PostgresDS" 
+                           pool-name="PostgresDS">
+                    <connection-url>jdbc:postgresql://localhost:5432/mydb</connection-url>
+                    <driver>postgresql</driver>
+                    <security>
+                        <!-- This would use the Vault credential source -->
+                        <credential-reference store="vault" 
+                                            alias="database/prod/credentials"
+                                            clear-text="false"/>
+                    </security>
+                    <validation>
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                    </validation>
+                </datasource>
+                <drivers>
+                    <driver name="postgresql" module="org.postgresql.jdbc">
+                        <driver-class>org.postgresql.Driver</driver-class>
+                    </driver>
+                </drivers>
+            </datasources>
+        </subsystem>
+    </profile>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+        <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+    </socket-binding-group>
+</server>

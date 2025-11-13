@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
+<layer-spec xmlns="urn:jboss:galleon:layer-spec:2.0" name="hashicorp-vault">
+    <props>
+      <prop name="org.wildfly.category" value="HashiCorp Vault"/>
+      <prop name="org.wildfly.description" value="Support for HashiCorp Vault"/>
+    </props>
+    <dependencies>
+        <layer name="elytron"/>
+    </dependencies>
+    <feature-group name="hashicorp-vault"/>
+</layer-spec>

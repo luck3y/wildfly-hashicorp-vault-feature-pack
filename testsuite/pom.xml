@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The WildFly Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>hashicorp-vault-parent</artifactId>
+        <!--
+        Maintain separation between the artifact id and the version to help prevent
+        merge conflicts between commits changing the GA and those changing the V.
+        -->
+        <version>1.0.0.Alpha-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>wildfly-hashicorp-vault-tests</artifactId>
+    <packaging>jar</packaging>
+
+    <name>WildFly HashiCorp Vault Support -- Testsuite</name>
+    <description>WildFly HashiCorp Vault TestSuite</description>
+
+    <properties>
+
+        <version.org.jboss.arquillian>1.9.5.Final</version.org.jboss.arquillian>
+        <version.org.wildfly.arquillian>5.0.1.Final</version.org.wildfly.arquillian>
+        <surefire.memory.args>-Xmx512m -XX:MetaspaceSize=128m</surefire.memory.args>
+        <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=*:${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+        <as.debug.port>8787</as.debug.port>
+        <surefire.system.args>${surefire.memory.args}</surefire.system.args>
+        <server.jvm.args>${surefire.memory.args}</server.jvm.args>
+        <server.jboss.args>--stability=preview</server.jboss.args>
+        <!-- Feature pack to use to provision hashicorp-vault -->
+        <hashicorp-vault.feature.pack.groupId>${project.groupId}</hashicorp-vault.feature.pack.groupId>
+        <hashicorp-vault.feature.pack.artifactId>wildfly-hashicorp-vault-feature-pack</hashicorp-vault.feature.pack.artifactId>
+        <hashicorp-vault.feature.pack.version>${project.version}</hashicorp-vault.feature.pack.version>
+
+        <base.feature.pack.groupId>org.wildfly</base.feature.pack.groupId>
+        <base.feature.pack.artifactId>wildfly-ee-galleon-pack</base.feature.pack.artifactId>
+        <base.feature.pack.version>${version.org.wildfly}</base.feature.pack.version>
+        <!-- For some reason this needs to be true if base.feature.pack.artifactId=wildfly-galleon-pack
+             But make it externally controllable in case someone wants to test with this turned off -->
+        <ignore.not.excluded.layers>true</ignore.not.excluded.layers>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import the arquillian bom before the mvc-tck one, as it declares an old version of the arq bom -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
+                <version>${version.org.wildfly.arquillian}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Provision traditional unzipped server installations -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <log-provisioning-time>${galleon.log.time}</log-provisioning-time>
+                    <offline-provisioning>${galleon.offline}</offline-provisioning>
+                    <record-provisioning-state>true</record-provisioning-state>
+                    <overwrite-provisioned-server>true</overwrite-provisioned-server>
+                    <galleon-options>
+                        <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                        <optional-packages>passive+</optional-packages>
+                        <config-stability-level>preview</config-stability-level>
+                        <package-stability-level>experimental</package-stability-level>
+                    </galleon-options>
+                </configuration>
+                <executions>
+                    <!-- Provision with layers -->
+                    <execution>
+                        <id>wildfly-layers-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-layers</provisioning-dir>
+                            <layers>
+                                <layer>core-server</layer>
+                                <layer>hashicorp-vault-layer</layer>
+                            </layers>
+                        </configuration>
+                    </execution>
+                    <!-- Provision a full installation -->
+                    <execution>
+                        <id>wildfly-complete-provisioning</id>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <provisioning-dir>${project.build.directory}/wildfly-complete</provisioning-dir>
+                        </configuration>
+                    </execution>
+                    <!-- Add the subsystem to the wildfly-complete dist's standalone.xml -->
+                    <execution>
+                        <id>configure-hashicorp-subsystem-subsystem</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                        <configuration>
+                            <jboss-home>${project.build.directory}/wildfly-complete</jboss-home>
+                            <offline>true</offline>
+                            <commands>
+                                <command>embed-server --stability=preview</command>
+                                <command>/extension=org.wildfly.extension.hashicorp-vault:add</command>
+                                <command>/subsystem=hashicorp-vault:add</command>
+                                <command>stop-embedded-server</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+
+        <!-- Default single feature pack provisioning -->
+        <profile>
+            <id>default.provisioning.profile</id>
+            <activation>
+                <property>
+                    <name>!base.feature.pack.artifactId</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <location>${hashicorp-vault.feature.pack.groupId}:${hashicorp-vault.feature.pack.artifactId}:${hashicorp-vault.feature.pack.version}</location>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>specified.base.provisioning.profile</id>
+            <activation>
+                <property>
+                    <name>base.feature.pack.version</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                            <galleon-options>
+                                <!-- For some reason this needs to be true if base.feature.pack.artifactId=wildfly-galleon-pack -->
+                                <ignore-not-excluded-layers>${ignore.not.excluded.layers}</ignore-not-excluded-layers>
+                            </galleon-options>
+                            <feature-packs>
+                                <feature-pack>
+                                    <location>${base.feature.pack.groupId}:${base.feature.pack.artifactId}:${base.feature.pack.version}</location>
+                                    <inherit-packages>false</inherit-packages>
+                                </feature-pack>
+                                <feature-pack>
+                                    <location>${hashicorp-vault.feature.pack.groupId}:${hashicorp-vault.feature.pack.artifactId}:${hashicorp-vault.feature.pack.version}</location>
+                                </feature-pack>
+                            </feature-packs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+          Debugging profiles.
+        -->
+        <profile>
+            <id>debug.profile</id>
+            <activation><property><name>debug</name></property></activation>
+            <properties>
+                <server.jvm.args>${surefire.memory.args} ${surefire.jpda.args}</server.jvm.args>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug.client.profile</id>
+            <activation><property><name>debug-client</name></property></activation>
+            <properties>
+                <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args}</surefire.system.args>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>
