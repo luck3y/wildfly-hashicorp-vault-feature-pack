@@ -12,7 +12,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemModel;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.SubsystemSchema;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.persistence.xml.ResourceXMLParticleFactory;
 import org.jboss.as.controller.persistence.xml.SubsystemResourceRegistrationXMLElement;
 import org.jboss.as.controller.persistence.xml.SubsystemResourceXMLSchema;
