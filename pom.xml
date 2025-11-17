@@ -250,7 +250,7 @@
             </snapshots>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>https://repository.jboss.org/nexus/repository/public-jboss/</url>
+            <url>https://repository.jboss.org/nexus/content/public-jboss/</url>
             <layout>default</layout>
         </repository>
     </repositories>
@@ -259,7 +259,7 @@
         <pluginRepository>
             <id>public-jboss-plugins</id>
             <name>Public JBoss Repository Group</name>
-            <url>https://repository.jboss.org/nexus/repository/public-jboss/</url>
+            <url>https://repository.jboss.org/nexus/content/public-jboss/</url>
         </pluginRepository>
     </pluginRepositories>
 </project>
