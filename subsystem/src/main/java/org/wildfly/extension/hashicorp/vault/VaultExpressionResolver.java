@@ -20,6 +20,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
+import org.wildfly.security.hashicorp.vault.HashicorpVaultCredentialStoreProvider;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
@@ -75,7 +76,7 @@ public final class VaultExpressionResolver implements ExpressionResolverExtensio
 
         CredentialStore credentialStore = getCredentialStore(context, credentialStoreName, expression);
 
-        // retrieve the credential from the resolved hahsicorp vault credential store
+        // retrieve the credential from the resolved hashicorp vault credential store
         PasswordCredential credential;
         try {
             credential = credentialStore.retrieve(alias, PasswordCredential.class);
@@ -112,6 +113,10 @@ public final class VaultExpressionResolver implements ExpressionResolverExtensio
                         HashiCorpVaultLogger.ROOT_LOGGER.credentialStoreServiceNotStartedForExpression(credentialStoreName, expression));
             }
             credentialStore = (CredentialStore) value;
+            if (!(credentialStore.getProvider() instanceof HashicorpVaultCredentialStoreProvider)) {
+                throw new ExpressionResolver.ExpressionResolutionUserException(
+                        HashiCorpVaultLogger.ROOT_LOGGER.credentialStoreIsNotHashiCorpVaultStore(credentialStoreName, expression));
+            }
         } catch (ExpressionResolver.ExpressionResolutionUserException | ExpressionResolver.ExpressionResolutionServerException e) {
             throw e;
         } catch (IllegalArgumentException e) {
