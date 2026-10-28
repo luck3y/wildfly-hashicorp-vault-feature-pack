@@ -122,7 +122,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: '**/target/surefire-reports/TEST-*.xml'
-          check_name: 'Test Results - Java ${{ github.event.inputs.java_version || '26' }} (Temurin) - ${{ matrix.os }}'
+          check_name: "Test Results - Java ${{ github.event.inputs.java_version || '26' }} (Temurin) - ${{ matrix.os }}"
           comment_mode: off
       
       - name: Upload test results - Java ${{ github.event.inputs.java_version || '26' }} (Temurin) - ${{ matrix.os }}
@@ -147,7 +147,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: '**/target/surefire-reports/TEST-*.xml'
-          check_name: 'Test Results - Java ${{ github.event.inputs.java_version || '26' }} (Semeru) - ${{ matrix.os }}'
+          check_name: "Test Results - Java ${{ github.event.inputs.java_version || '26' }} (Semeru) - ${{ matrix.os }}"
           comment_mode: off
       
       - name: Upload test results - Java ${{ github.event.inputs.java_version || '26' }} (Semeru) - ${{ matrix.os }}
