@@ -174,7 +174,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=17 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=17 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 17 (Temurin)
@@ -204,7 +204,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=17 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=17 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 17 (Semeru)
@@ -234,7 +234,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=21 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=21 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 21 (Temurin)
@@ -264,7 +264,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=21 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=21 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 21 (Semeru)
@@ -294,7 +294,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=25 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=25 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 25 (Temurin)
@@ -324,7 +324,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -Djdk.test.version=25 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -Djdk.test.version=25 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 25 (Semeru)

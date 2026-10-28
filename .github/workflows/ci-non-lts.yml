@@ -118,7 +118,7 @@ jobs:
           JAVA_VERSION="${{ github.event.inputs.java_version || '26' }}"
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=${JAVA_VERSION} -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=${JAVA_VERSION} -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java ${{ github.event.inputs.java_version || '26' }} (Temurin) - ${{ matrix.os }}
@@ -149,7 +149,7 @@ jobs:
           JAVA_VERSION="${{ github.event.inputs.java_version || '26' }}"
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=${JAVA_VERSION} -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=${JAVA_VERSION} -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java ${{ github.event.inputs.java_version || '26' }} (Semeru) - ${{ matrix.os }}

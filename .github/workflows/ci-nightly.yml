@@ -176,7 +176,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=17 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=17 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 17 (Temurin) - ${{ matrix.os }}
@@ -207,7 +207,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=17 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=17 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 17 (Semeru) - ${{ matrix.os }}
@@ -237,7 +237,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=21 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=21 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 21 (Temurin) - ${{ matrix.os }}
@@ -267,7 +267,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=21 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=21 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 21 (Semeru) - ${{ matrix.os }}
@@ -297,7 +297,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=25 -Djdk.test.vendor=temurin -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=25 -Djdk.test.vendor=temurin -B
         continue-on-error: true
       
       - name: Publish test results - Java 25 (Temurin) - ${{ matrix.os }}
@@ -327,7 +327,7 @@ jobs:
         run: |
           # Clear reports from the previous JDK/vendor run.
           find . -type f \( -path '*/target/surefire-reports/*' -o -path '*/target/failsafe-reports/*' \) -delete
-          mvn verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=25 -Djdk.test.vendor=semeru -B
+          mvn -pl subsystem,testsuite verify -DskipITs=${{ matrix.os != 'ubuntu-latest' }} -Djdk.test.version=25 -Djdk.test.vendor=semeru -B
         continue-on-error: true
       
       - name: Publish test results - Java 25 (Semeru) - ${{ matrix.os }}

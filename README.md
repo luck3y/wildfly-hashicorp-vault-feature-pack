@@ -47,23 +47,27 @@ If you want to run tests with a different JDK without changing your current `JAV
 
 Default behaviour using your current JDK:
 
+After the initial build, select the two modules containing tests to reuse the
+built feature pack. This avoids repeating Galleon feature-pack generation during
+each JDK/vendor run.
+
 ```bash
-mvn verify
+mvn -pl subsystem,testsuite verify
 ```
 
 Opt in to a specific toolchain-managed JDK:
 
 ```bash
-mvn verify -Djdk.test.version=17
-mvn verify -Djdk.test.version=21
-mvn verify -Djdk.test.version=25
+mvn -pl subsystem,testsuite verify -Djdk.test.version=17
+mvn -pl subsystem,testsuite verify -Djdk.test.version=21
+mvn -pl subsystem,testsuite verify -Djdk.test.version=25
 ```
 
 Select a specific distribution when using toolchains:
 
 ```bash
-mvn verify -Djdk.test.version=21 -Djdk.test.vendor=temurin
-mvn verify -Djdk.test.version=21 -Djdk.test.vendor=semeru
+mvn -pl subsystem,testsuite verify -Djdk.test.version=21 -Djdk.test.vendor=temurin
+mvn -pl subsystem,testsuite verify -Djdk.test.version=21 -Djdk.test.vendor=semeru
 ```
 
 Toolchains are activated only when `jdk.test.version` is set. If `jdk.test.vendor` is not specified, it defaults to `temurin`.
@@ -75,7 +79,7 @@ Vault integration tests require a Docker-compatible container runtime, such as D
 or Podman. With a selected toolchain, both Failsafe and its managed WildFly server
 use that JDK; Maven continues to run on the build JDK (Java 25 or later).
 
-CI builds artifacts once with tests skipped, then runs `mvn verify` for each JDK
+CI builds artifacts once with tests skipped, then runs `mvn -pl subsystem,testsuite verify` for each JDK
 and vendor. Vault integration tests run on Linux; Windows and macOS retain
 Surefire coverage with `-DskipITs=true`. Both `target/surefire-reports/` and
 `target/failsafe-reports/` are
@@ -100,7 +104,7 @@ This profile runs Surefire tests sequentially with each Java version and creates
 - `target/surefire-reports-java25-temurin/`
 
 The profile does not repeat Failsafe integration tests for each JDK. For complete
-coverage, run `mvn verify -Djdk.test.version=... -Djdk.test.vendor=...` separately
+coverage, run `mvn -pl subsystem,testsuite verify -Djdk.test.version=... -Djdk.test.vendor=...` separately
 for each JDK and vendor, as CI does.
 
 You can specify a different JDK distribution:
