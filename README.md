@@ -48,26 +48,43 @@ If you want to run tests with a different JDK without changing your current `JAV
 Default behaviour using your current JDK:
 
 ```bash
-mvn test
+mvn verify
 ```
 
 Opt in to a specific toolchain-managed JDK:
 
 ```bash
-mvn test -Djdk.test.version=17
-mvn test -Djdk.test.version=21
-mvn test -Djdk.test.version=25
+mvn verify -Djdk.test.version=17
+mvn verify -Djdk.test.version=21
+mvn verify -Djdk.test.version=25
 ```
 
 Select a specific distribution when using toolchains:
 
 ```bash
-mvn test -Djdk.test.version=21 -Djdk.test.vendor=temurin
-mvn test -Djdk.test.version=21 -Djdk.test.vendor=semeru
+mvn verify -Djdk.test.version=21 -Djdk.test.vendor=temurin
+mvn verify -Djdk.test.version=21 -Djdk.test.vendor=semeru
 ```
 
 Toolchains are activated only when `jdk.test.version` is set. If `jdk.test.vendor` is not specified, it defaults to `temurin`.
 
+
+`verify` runs both Surefire tests and the Vault integration tests through Failsafe,
+and fails the build if either suite fails. `mvn test` runs only the Surefire tests.
+Vault integration tests require a Docker-compatible container runtime, such as Docker
+or Podman. With a selected toolchain, both Failsafe and its managed WildFly server
+use that JDK; Maven continues to run on the build JDK (Java 25 or later).
+
+CI builds artifacts once with tests skipped, then runs `mvn verify` for each JDK
+and vendor. Vault integration tests run on Linux; Windows and macOS retain
+Surefire coverage with `-DskipITs=true`. Both `target/surefire-reports/` and
+`target/failsafe-reports/` are
+published after each permutation; report artifacts are uploaded only when that
+permutation fails. Report files are cleared before each permutation while keeping
+compiled classes, packaged artifacts and provisioned servers. Check the Failsafe XML reports for
+`*IntegrationTestCase` results and skipped counts when verifying coverage; a fast
+successful Surefire run alone does not establish Vault compatibility. Vault image
+selection is defined by the test fixtures.
 
 ### Testing with all Java versions
 
@@ -77,10 +94,14 @@ To run tests against all supported Java versions (17, 21, 25) in a single comman
 mvn clean install -Ptest-all-versions
 ```
 
-This profile runs tests sequentially with each Java version and creates separate test report directories:
+This profile runs Surefire tests sequentially with each Java version and creates separate test report directories:
 - `target/surefire-reports-java17-temurin/`
 - `target/surefire-reports-java21-temurin/`
 - `target/surefire-reports-java25-temurin/`
+
+The profile does not repeat Failsafe integration tests for each JDK. For complete
+coverage, run `mvn verify -Djdk.test.version=... -Djdk.test.vendor=...` separately
+for each JDK and vendor, as CI does.
 
 You can specify a different JDK distribution:
 

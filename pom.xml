@@ -296,6 +296,16 @@
                                 </jdkToolchain>
                             </configuration>
                         </plugin>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
+                            <configuration>
+                                <jdkToolchain>
+                                    <version>${jdk.test.version}</version>
+                                    <vendor>${jdk.test.vendor}</vendor>
+                                </jdkToolchain>
+                            </configuration>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
             </build>
