@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.extension.hashicorp.vault.CredentialStoreDefinition.HOST_ADDRESS;
 
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.time.Duration;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -33,6 +35,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.vault.VaultContainer;
 
@@ -52,6 +55,7 @@ import com.github.dockerjava.api.DockerClient;
 public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
 
     private static final String VAULT_TOKEN = "myroot";
+    private static final int VAULT_PORT = 8200;
     private static final String CREDENTIAL_STORE_NAME = "vault-reload-store";
     private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(
             PathElement.pathElement("subsystem", VaultExtension.SUBSYSTEM_NAME));
@@ -234,6 +238,12 @@ public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
     private static void startVault() {
         DockerClient client = DockerClientFactory.instance().client();
         client.startContainerCmd(vault.getContainerId()).exec();
+        // The Docker start API returns before Vault is ready to accept requests.
+        Wait.forHttp("/v1/sys/health")
+                .forPort(VAULT_PORT)
+                .forStatusCode(200)
+                .withStartupTimeout(Duration.ofSeconds(60))
+                .waitUntilReady(vault);
     }
 
     /**
@@ -276,8 +286,15 @@ public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            int hostPort;
+            try (ServerSocket socket = new ServerSocket(0)) {
+                hostPort = socket.getLocalPort();
+            }
             vault = new VaultContainer<>(DockerImageName.parse("hashicorp/vault:1.21"))
                     .withVaultToken(VAULT_TOKEN);
+            // Docker can reassign a random host port on restart. Keep the endpoint used
+            // by WildFly unchanged throughout the availability tests.
+            vault.setPortBindings(List.of(hostPort + ":" + VAULT_PORT));
             vault.start();
 
             ModelNode add = Util.createAddOperation(CREDENTIAL_STORE_ADDRESS);
@@ -292,8 +309,7 @@ public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
                 // Restart in case a test failed before its finally block
                 if (vault != null) {
                     try {
-                        DockerClientFactory.instance().client()
-                                .startContainerCmd(vault.getContainerId()).exec();
+                        startVault();
                     } catch (Exception ignored) {
                         // Container may already be running or stopped
                     }
