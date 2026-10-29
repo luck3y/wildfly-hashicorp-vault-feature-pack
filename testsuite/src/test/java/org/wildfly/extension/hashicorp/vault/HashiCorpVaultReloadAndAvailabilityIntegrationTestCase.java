@@ -72,6 +72,7 @@ public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
 
     private static final long RELOAD_TIMEOUT_MILLIS = 60_000;
     private static final long RELOAD_POLL_INTERVAL_MILLIS = 500;
+    private static final long RELOAD_DOWN_POLL_INTERVAL_MILLIS = 100;
 
     private static VaultContainer<?> vault;
 
@@ -247,30 +248,58 @@ public class HashiCorpVaultReloadAndAvailabilityIntegrationTestCase {
     }
 
     /**
-     * Reloads the WildFly server and waits until it reaches {@code running} state.
+     * Reloads the WildFly server and waits until the reload has actually happened and the server
+     * is fully booted.
+     * <p>
+     * The {@code reload} operation only schedules the restart, so the old instance keeps answering
+     * management requests for a short time. The method therefore first waits until the server is
+     * observed going down (connection failure or a state other than {@code running}), and only then
+     * waits for {@code server-state} and {@code process-state} to be {@code running} again.
      */
     private static void reloadServer(ManagementClient managementClient) throws Exception {
         ModelNode reloadOp = Util.createOperation("reload", PathAddress.EMPTY_ADDRESS);
-        managementClient.getControllerClient().execute(reloadOp);
-
-        ModelNode readStateOp = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
-        readStateOp.get("name").set("server-state");
+        try {
+            managementClient.getControllerClient().execute(reloadOp);
+        } catch (IOException ignored) {
+            // The channel may be closed by the reload before the response is delivered
+        }
 
         long deadline = System.currentTimeMillis() + RELOAD_TIMEOUT_MILLIS;
+
+        // Phase 1: wait for the old server instance to go away
         while (System.currentTimeMillis() < deadline) {
-            Thread.sleep(RELOAD_POLL_INTERVAL_MILLIS);
-            try {
-                ModelNode result = managementClient.getControllerClient().execute(readStateOp);
-                if (SUCCESS.equals(result.get(OUTCOME).asString())
-                        && "running".equals(result.get(RESULT).asString())) {
-                    return;
-                }
-            } catch (IOException ignored) {
-                // Server is still reloading — connection refused or reset is expected
+            if (!isServerRunning(managementClient)) {
+                break;
             }
+            Thread.sleep(RELOAD_DOWN_POLL_INTERVAL_MILLIS);
+        }
+
+        // Phase 2: wait for the new server instance to be fully booted
+        while (System.currentTimeMillis() < deadline) {
+            if (isServerRunning(managementClient)) {
+                return;
+            }
+            Thread.sleep(RELOAD_POLL_INTERVAL_MILLIS);
         }
         throw new AssertionError("Server did not reach 'running' state within "
                 + RELOAD_TIMEOUT_MILLIS / 1000 + " seconds after reload");
+    }
+
+    private static boolean isServerRunning(ManagementClient managementClient) {
+        try {
+            return "running".equals(readRootAttribute(managementClient, "server-state"))
+                    && "running".equals(readRootAttribute(managementClient, "process-state"));
+        } catch (IOException e) {
+            // Server is down or still booting — connection refused or reset is expected
+            return false;
+        }
+    }
+
+    private static String readRootAttribute(ManagementClient managementClient, String name) throws IOException {
+        ModelNode op = Util.createOperation("read-attribute", PathAddress.EMPTY_ADDRESS);
+        op.get("name").set(name);
+        ModelNode result = managementClient.getControllerClient().execute(op);
+        return SUCCESS.equals(result.get(OUTCOME).asString()) ? result.get(RESULT).asString() : null;
     }
 
     // =====================================================================
